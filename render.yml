@@ -1,0 +1,46 @@
+version: '3'
+services:
+  db:
+    container_name: mysql-db
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/mysql:/var/lib/mysql
+    networks:
+      - app-network
+
+  service1:
+    image: kira2308/service1
+    container_name: service1
+    restart: always
+    depends_on:
+      - db
+    environment:
+        - DB_HOST=db
+    ports:
+      - "8081:8081"
+    networks:
+        - app-network
+
+  service2:
+    image: kira2308/service2
+    container_name: service2
+    restart: always
+    depends_on:
+      - db
+    environment:
+        - DB_HOST=db
+    ports:
+      - "8082:8082"
+    networks:
+        - app-network
+
+volumes:
+    mysql:
+    app-network:
+        driver: bridge
