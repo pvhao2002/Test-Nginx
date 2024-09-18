@@ -1,46 +1,39 @@
-version: '3'
+previews:
+  generation: automatic # enable automatic preview generation
+
 services:
-  db:
-    container_name: mysql-db
-    image: mysql
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 1234
-    ports:
-      - "3306:3306"
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/mysql:/var/lib/mysql
-    networks:
-      - app-network
+  - type: web
+    name: mysql-db
+    runtime: image
+    image:
+      url: mysql
+    disk:
+      name: mysql
+      mountPath: /var/lib/mysql
+      sizeGB: 5
+    envVars:
+      - fromGroup: mysql
 
-  service1:
-    image: kira2308/service1
-    container_name: service1
-    restart: always
-    depends_on:
-      - db
-    environment:
-        - DB_HOST=db
-    ports:
-      - "8081:8081"
-    networks:
-        - app-network
+  - type: web
+    name: service1
+    runtime: image
+    image:
+      url: kira2308/service1
+    envVars:
+      - key: DB_HOST
+        value: mysql-db
 
-  service2:
-    image: kira2308/service2
-    container_name: service2
-    restart: always
-    depends_on:
-      - db
-    environment:
-        - DB_HOST=db
-    ports:
-      - "8082:8082"
-    networks:
-        - app-network
+  - type: web
+    name: service2
+    runtime: image
+    image:
+      url: kira2308/service2
+    envVars:
+      - key: DB_HOST
+        value: mysql-db
 
-volumes:
-    mysql:
-    app-network:
-        driver: bridge
+envVarGroups:
+  - name: mysql
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        value: 1234
